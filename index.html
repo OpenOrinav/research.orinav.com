@@ -1,10 +1,1032 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
-    <title>Hello, world!</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Orinav Research Data Collection</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f5f7fb;
+        --card: #ffffff;
+        --primary: #1e66ff;
+        --primary-dark: #1246b3;
+        --accent: #ff3b3b;
+        --text: #0f172a;
+        --muted: #475569;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", "PingFang SC", "Noto Sans SC", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        overflow: hidden;
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+      }
+
+      #app {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 16px;
+        padding-bottom: calc(16px + env(safe-area-inset-bottom));
+        padding-top: calc(16px + env(safe-area-inset-top));
+        gap: 16px;
+      }
+
+      .header {
+        background: var(--card);
+        border-radius: 16px;
+        padding: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      }
+
+      .header-info {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 16px;
+      }
+
+      .header-info strong {
+        font-size: 18px;
+      }
+
+      .restart {
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        padding: 14px 18px;
+        font-size: 18px;
+      }
+
+      .card {
+        background: var(--card);
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      }
+
+      .title {
+        font-size: 28px;
+        font-weight: 700;
+        text-align: center;
+      }
+
+      .subtitle {
+        font-size: 18px;
+        text-align: center;
+        color: var(--muted);
+      }
+
+      .message {
+        flex: 1;
+        font-size: 22px;
+        line-height: 1.5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 8px 12px;
+        background: var(--card);
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      }
+
+      .question {
+        font-size: 24px;
+        font-weight: 600;
+        text-align: center;
+      }
+
+      .button-grid {
+        flex: 1;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .button-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .btn {
+        padding: 18px 16px;
+        font-size: 20px;
+        border-radius: 16px;
+        border: none;
+        color: #fff;
+        background: var(--primary);
+        min-height: 64px;
+      }
+
+      .btn.pressed {
+        background: var(--primary-dark);
+      }
+
+      .btn.secondary {
+        background: #94a3b8;
+      }
+
+      .btn.full {
+        grid-column: 1 / -1;
+      }
+
+      .btn.red {
+        background: var(--accent);
+      }
+
+      .btn.light {
+        background: #2563eb;
+      }
+
+      .input-field {
+        width: 100%;
+        font-size: 22px;
+        padding: 16px;
+        border-radius: 16px;
+        border: 2px solid #cbd5f5;
+      }
+
+      .timer-card {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        font-size: 18px;
+      }
+
+      .timer-card strong {
+        font-size: 20px;
+      }
+
+      .textarea {
+        width: 100%;
+        flex: 1;
+        font-size: 18px;
+        padding: 16px;
+        border-radius: 16px;
+        border: 2px solid #cbd5f5;
+        resize: none;
+      }
+
+      .copy-area {
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        font-size: 14px;
+        height: 40vh;
+      }
+
+      .footer-buttons {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      @media (max-width: 480px) {
+        .title {
+          font-size: 24px;
+        }
+
+        .message {
+          font-size: 20px;
+        }
+
+        .btn {
+          font-size: 18px;
+        }
+      }
+    </style>
   </head>
   <body>
-    <p>Hello, world!</p>
+    <div id="app"></div>
+
+    <script>
+      const STORAGE_KEY = "orinav-data-collection";
+
+      const initialData = () => ({
+        participant: null,
+        condition: null,
+        informedConsent: null,
+        demographics: {
+          age: null,
+          gender: null,
+          education: null,
+          navigationAppUsage: null,
+          commonNavigationApp: null,
+          mobile: null,
+        },
+        events: [],
+        survey: {
+          sus: {
+            q1: null,
+            q2: null,
+            q3: null,
+            q4: null,
+            q5: null,
+            q6: null,
+            q7: null,
+            q8: null,
+            q9: null,
+            q10: null,
+          },
+          q11: "",
+          q12: "",
+          q13: null,
+        },
+        state: {
+          stage: "home",
+          index: 0,
+          locationRequested: false,
+          lastPosition: { lat: 0, lng: 0 },
+          actionPressCounts: {},
+          dataCollectionFlags: {
+            orinavObstaclesActive: false,
+            orinavTrafficLightsActive: false,
+          },
+          dataCollectionStartTime: null,
+        },
+      });
+
+      let appData = loadData();
+      let timerInterval = null;
+
+      function loadData() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) {
+          return initialData();
+        }
+        try {
+          const parsed = JSON.parse(saved);
+          return { ...initialData(), ...parsed, state: { ...initialData().state, ...parsed.state } };
+        } catch (error) {
+          return initialData();
+        }
+      }
+
+      function saveData() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+      }
+
+      function updateState(partial) {
+        appData = { ...appData, ...partial, state: { ...appData.state, ...partial.state } };
+        saveData();
+        render();
+      }
+
+      function setStage(stage, index = 0) {
+        updateState({ state: { stage, index } });
+      }
+
+      function requestLocation() {
+        if (appData.state.locationRequested) {
+          return;
+        }
+        appData.state.locationRequested = true;
+        saveData();
+        if (!navigator.geolocation) {
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            appData.state.lastPosition = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            };
+            saveData();
+          },
+          () => {
+            appData.state.lastPosition = { lat: 0, lng: 0 };
+            saveData();
+          },
+          { enableHighAccuracy: true, maximumAge: 10000, timeout: 8000 }
+        );
+        navigator.geolocation.watchPosition(
+          (position) => {
+            appData.state.lastPosition = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            };
+            saveData();
+          },
+          () => {
+            appData.state.lastPosition = { lat: 0, lng: 0 };
+            saveData();
+          },
+          { enableHighAccuracy: true, maximumAge: 10000, timeout: 8000 }
+        );
+      }
+
+      function addEvent(type) {
+        const now = Date.now();
+        const { lat, lng } = appData.state.lastPosition || { lat: 0, lng: 0 };
+        appData.events.push({ type, time: now, lat, lng });
+        saveData();
+      }
+
+      function renderHeader(container) {
+        const header = document.createElement("div");
+        header.className = "header";
+
+        const info = document.createElement("div");
+        info.className = "header-info";
+        const participantText = document.createElement("strong");
+        participantText.textContent = `参与者：${appData.participant || "--"}`;
+        const conditionText = document.createElement("span");
+        conditionText.textContent = `条件：${appData.condition || "--"}`;
+        info.appendChild(participantText);
+        info.appendChild(conditionText);
+
+        const restart = document.createElement("button");
+        restart.className = "restart";
+        restart.textContent = "Restart";
+        restart.addEventListener("click", () => {
+          if (restart.dataset.confirm === "true") {
+            appData = initialData();
+            saveData();
+            render();
+            return;
+          }
+          restart.dataset.confirm = "true";
+          restart.textContent = "Confirm?";
+          setTimeout(() => {
+            restart.dataset.confirm = "false";
+            restart.textContent = "Restart";
+          }, 2500);
+        });
+
+        header.appendChild(info);
+        header.appendChild(restart);
+        container.appendChild(header);
+      }
+
+      function renderHome() {
+        const container = document.createElement("div");
+        container.className = "page";
+
+        const card = document.createElement("div");
+        card.className = "card";
+        const title = document.createElement("div");
+        title.className = "title";
+        title.textContent = "Orinav Research Data Collection";
+        const subtitle = document.createElement("div");
+        subtitle.className = "subtitle";
+        subtitle.textContent = "请点击下方按钮开始数据采集";
+        card.appendChild(title);
+        card.appendChild(subtitle);
+
+        const startButton = document.createElement("button");
+        startButton.className = "btn full";
+        startButton.textContent = "开始数据采集";
+        startButton.addEventListener("click", () => setStage("participant"));
+
+        container.appendChild(card);
+        container.appendChild(startButton);
+        requestLocation();
+        return container;
+      }
+
+      function renderParticipant() {
+        const container = document.createElement("div");
+        container.className = "page";
+
+        const message = document.createElement("div");
+        message.className = "message";
+        message.textContent = "请选择参与者编号";
+        const grid = document.createElement("div");
+        grid.className = "button-grid";
+
+        for (let i = 1; i <= 10; i += 1) {
+          const button = document.createElement("button");
+          button.className = "btn";
+          button.textContent = `P${i}`;
+          button.addEventListener("click", () => {
+            updateState({ participant: `P${i}` });
+            setStage("condition");
+          });
+          grid.appendChild(button);
+        }
+
+        container.appendChild(message);
+        container.appendChild(grid);
+        return container;
+      }
+
+      function renderCondition() {
+        const container = document.createElement("div");
+        container.className = "page";
+
+        const message = document.createElement("div");
+        message.className = "message";
+        message.textContent = "请选择条件类型";
+        const grid = document.createElement("div");
+        grid.className = "button-grid";
+
+        const options = [
+          { label: "A (Orinav)", value: "A" },
+          { label: "B (Amap)", value: "B" },
+          { label: "C (Baseline)", value: "C" },
+        ];
+
+        options.forEach((option) => {
+          const button = document.createElement("button");
+          button.className = "btn";
+          button.textContent = option.label;
+          button.addEventListener("click", () => {
+            updateState({ condition: option.value });
+            setStage("messages", 0);
+          });
+          grid.appendChild(button);
+        });
+
+        container.appendChild(message);
+        container.appendChild(grid);
+        return container;
+      }
+
+      function getMessages() {
+        const baseMessages = [
+          "您好，我们现在即将开始测试。",
+          "您正在参加面向视障人士的多任务无障碍导航研究项目。",
+          "在本项目中，我们会重复三次走过同一条路径，每一次都换用不同的导航工具。",
+          `这一次测试中，我们将使用 ${
+            appData.condition === "A"
+              ? "奥里导航 + 盲杖"
+              : appData.condition === "B"
+              ? "高德地图 + 盲杖"
+              : "盲杖"
+          } 完成这一条路径。`,
+          "这一条路线长约 500 米，大概需要您 5 分钟时间走完。",
+          "这一条路线中有一个路口，需要过红绿灯。",
+          "完成这条路线后，我们会休息几分钟，期间您会完成一个调查问卷。",
+          "下面我来为您介绍一下苹果手机的读屏软件。",
+          "左划能切换上一个标签，右划能切换下一个标签。",
+          "双击就能点击。",
+          "两根手指就能划动。",
+        ];
+        const conditionMessages = [];
+        if (appData.condition === "A") {
+          conditionMessages.push(
+            "下面我来为您介绍一下奥里导航的功能。",
+            "首先，在导航过程中，奥里导航会随时告诉您应该面向什么方向，才能对齐人行道。",
+            "如果您忘掉了现在应该怎么走，使劲摇一摇手机就能重复当前指示。",
+            "在使用导航时，请用手握住手机的下半部分，同时手机一直面向行进方向。",
+            "把手机举起来，面向前方，就可以识别障碍物或者红绿灯。"
+          );
+        }
+        if (appData.condition === "B") {
+          conditionMessages.push(
+            "下面我来为您介绍一下高德地图的功能。",
+            "导航过程中，高德地图会告诉您应该面向什么方向，才能对齐人行道。",
+            "在支持的地方，高德地图会告诉您红绿灯的读秒，不需要抬起手机。"
+          );
+        }
+        const finalMessages = [
+          "参与本研究完全基于自愿，您可以随时停止参与。",
+          "现在我们将会记录一些您的基本信息，这些信息我们会匿名化处理，不会记录您的具体身份。",
+        ];
+        return [...baseMessages, ...conditionMessages, ...finalMessages];
+      }
+
+      function renderMessagePage() {
+        const container = document.createElement("div");
+        container.className = "page";
+        renderHeader(container);
+
+        const messages = getMessages();
+        const index = appData.state.index;
+        const messageCard = document.createElement("div");
+        messageCard.className = "message";
+        messageCard.textContent = messages[index];
+
+        const buttons = document.createElement("div");
+        buttons.className = "footer-buttons";
+        const prev = document.createElement("button");
+        prev.className = "btn secondary";
+        prev.textContent = "上一步";
+        prev.disabled = index === 0;
+        prev.addEventListener("click", () => {
+          if (index > 0) {
+            setStage("messages", index - 1);
+          }
+        });
+        const next = document.createElement("button");
+        next.className = "btn";
+        next.textContent = index === messages.length - 1 ? "进入信息记录" : "下一步";
+        next.addEventListener("click", () => {
+          if (messages[index] === "参与本研究完全基于自愿，您可以随时停止参与。") {
+            updateState({ informedConsent: Date.now() });
+          }
+          if (index === messages.length - 1) {
+            setStage("demographics", 0);
+          } else {
+            setStage("messages", index + 1);
+          }
+        });
+        buttons.appendChild(prev);
+        buttons.appendChild(next);
+
+        container.appendChild(messageCard);
+        container.appendChild(buttons);
+        return container;
+      }
+
+      function getDemographicQuestions() {
+        const questions = [
+          { key: "age", label: "年龄?", type: "number" },
+          {
+            key: "gender",
+            label: "性别?",
+            options: [
+              { label: "男", value: "m" },
+              { label: "女", value: "f" },
+              { label: "其他", value: "others" },
+            ],
+          },
+          {
+            key: "education",
+            label: "教育程度?",
+            options: [
+              { label: "小学及以下", value: "primary" },
+              { label: "初中", value: "middle" },
+              { label: "高中或中专", value: "high" },
+              { label: "大专", value: "associates" },
+              { label: "本科", value: "bachelors" },
+              { label: "研究生及以上", value: "masters" },
+            ],
+          },
+          {
+            key: "navigationAppUsage",
+            label: "是否经常使用导航软件?",
+            options: [
+              { label: "是", value: true },
+              { label: "否", value: false },
+            ],
+          },
+        ];
+        if (appData.demographics.navigationAppUsage === true) {
+          questions.push({
+            key: "commonNavigationApp",
+            label: "经常使用什么导航软件?",
+            options: [
+              { label: "百度地图", value: "baidu" },
+              { label: "高德地图", value: "amap" },
+              { label: "腾讯地图", value: "tencent" },
+              { label: "视氪导航", value: "shike" },
+              { label: "白马地图", value: "bmap" },
+              { label: "其他", value: "others" },
+            ],
+          });
+        } else {
+          appData.demographics.commonNavigationApp = null;
+        }
+        questions.push({
+          key: "mobile",
+          label: "手机的操作系统?",
+          options: [
+            { label: "iOS", value: "ios" },
+            { label: "Android", value: "android" },
+            { label: "其他", value: "others" },
+            { label: "不使用手机", value: "no-phone" },
+          ],
+        });
+        return questions;
+      }
+
+      function renderDemographics() {
+        const container = document.createElement("div");
+        container.className = "page";
+        renderHeader(container);
+
+        const questions = getDemographicQuestions();
+        const index = appData.state.index;
+        const question = questions[index];
+
+        const card = document.createElement("div");
+        card.className = "card";
+        const label = document.createElement("div");
+        label.className = "question";
+        label.textContent = question.label;
+        card.appendChild(label);
+
+        if (question.type === "number") {
+          const input = document.createElement("input");
+          input.className = "input-field";
+          input.type = "number";
+          input.inputMode = "numeric";
+          input.value = appData.demographics.age || "";
+          input.addEventListener("input", (event) => {
+            const value = Number(event.target.value);
+            appData.demographics.age = Number.isNaN(value) ? null : value;
+            saveData();
+          });
+          card.appendChild(input);
+        } else if (question.options) {
+          const grid = document.createElement("div");
+          grid.className = "button-grid";
+          question.options.forEach((option) => {
+            const button = document.createElement("button");
+            const currentValue = appData.demographics[question.key];
+            button.className = `btn ${currentValue === option.value ? "pressed" : ""}`;
+            button.textContent = option.label;
+            button.addEventListener("click", () => {
+              appData.demographics[question.key] = option.value;
+              saveData();
+              render();
+            });
+            grid.appendChild(button);
+          });
+          card.appendChild(grid);
+        }
+
+        const buttons = document.createElement("div");
+        buttons.className = "footer-buttons";
+        const prev = document.createElement("button");
+        prev.className = "btn secondary";
+        prev.textContent = "上一步";
+        prev.disabled = index === 0;
+        prev.addEventListener("click", () => {
+          if (index > 0) {
+            setStage("demographics", index - 1);
+          }
+        });
+        const next = document.createElement("button");
+        next.className = "btn";
+        next.textContent = index === questions.length - 1 ? "进入记录" : "下一步";
+        next.addEventListener("click", () => {
+          if (index === questions.length - 1) {
+            setStage("data", 0);
+          } else {
+            setStage("demographics", index + 1);
+          }
+        });
+        buttons.appendChild(prev);
+        buttons.appendChild(next);
+
+        container.appendChild(card);
+        container.appendChild(buttons);
+        return container;
+      }
+
+      function renderDataCollection() {
+        const container = document.createElement("div");
+        container.className = "page";
+        renderHeader(container);
+
+        if (!appData.state.dataCollectionStartTime) {
+          const startTime = Date.now();
+          appData.state.dataCollectionStartTime = startTime;
+          addEvent("start");
+          saveData();
+        }
+
+        const timerCard = document.createElement("div");
+        timerCard.className = "card timer-card";
+        const startTime = new Date(appData.state.dataCollectionStartTime);
+        const startText = document.createElement("strong");
+        startText.textContent = `开始时间：${startTime.toLocaleTimeString("zh-CN")}`;
+        const elapsedText = document.createElement("span");
+        elapsedText.id = "elapsed-time";
+        timerCard.appendChild(startText);
+        timerCard.appendChild(elapsedText);
+
+        const buttonsGrid = document.createElement("div");
+        buttonsGrid.className = "button-grid";
+        const baseButtons = [
+          { label: "Hesitation", type: "hesitation" },
+          { label: "Significant Deviation", type: "deviation" },
+          { label: "Correcting Path", type: "correcting" },
+          { label: "Corrected Path", type: "corrected" },
+          { label: "Start Turning", type: "startTurn" },
+          { label: "End Turning", type: "endTurn" },
+        ];
+
+        const addActionButton = (label, type) => {
+          const button = document.createElement("button");
+          const count = appData.state.actionPressCounts[type] || 0;
+          button.className = `btn light ${count % 2 === 1 ? "pressed" : ""}`;
+          button.textContent = label;
+          button.addEventListener("click", () => {
+            appData.state.actionPressCounts[type] = (appData.state.actionPressCounts[type] || 0) + 1;
+            addEvent(type);
+            saveData();
+            render();
+          });
+          buttonsGrid.appendChild(button);
+        };
+
+        baseButtons.forEach((item) => addActionButton(item.label, item.type));
+
+        if (appData.condition === "A") {
+          if (appData.state.dataCollectionFlags.orinavObstaclesActive) {
+            addActionButton("End Obstacles", "orinavEndObstacles");
+          } else {
+            addActionButton("Start Obstacles", "orinavStartObstacles");
+          }
+          if (appData.state.dataCollectionFlags.orinavTrafficLightsActive) {
+            addActionButton("End Traffic Lights: Success", "orinavEndTrafficLightsSuccess");
+            addActionButton("End Traffic Lights: Failure", "orinavEndTrafficLightsFailure");
+          } else {
+            addActionButton("Start Traffic Lights", "orinavStartTrafficLights");
+          }
+          addActionButton("Shake", "orinavShake");
+          addActionButton("Orientation", "orinavOrientation");
+        }
+        if (appData.condition === "B") {
+          addActionButton("Orientation", "amapOrientation");
+          addActionButton("Tactile Paving", "amapTactilePaving");
+          addActionButton("Traffic Light Reading", "amapTrafficLight");
+        }
+
+        buttonsGrid.addEventListener("click", (event) => {
+          const buttonText = event.target.textContent;
+          if (buttonText === "Start Obstacles") {
+            appData.state.dataCollectionFlags.orinavObstaclesActive = true;
+            saveData();
+          }
+          if (buttonText === "End Obstacles") {
+            appData.state.dataCollectionFlags.orinavObstaclesActive = false;
+            saveData();
+          }
+          if (buttonText === "Start Traffic Lights") {
+            appData.state.dataCollectionFlags.orinavTrafficLightsActive = true;
+            saveData();
+          }
+          if (
+            buttonText === "End Traffic Lights: Success" ||
+            buttonText === "End Traffic Lights: Failure"
+          ) {
+            appData.state.dataCollectionFlags.orinavTrafficLightsActive = false;
+            saveData();
+          }
+        });
+
+        const endButtons = document.createElement("div");
+        endButtons.className = "footer-buttons";
+        const endSuccess = document.createElement("button");
+        endSuccess.className = "btn";
+        endSuccess.textContent = "End: Success";
+        endSuccess.addEventListener("click", () => {
+          addEvent("endSuccess");
+          setStage("survey", 0);
+        });
+        const endFailure = document.createElement("button");
+        endFailure.className = "btn red";
+        endFailure.textContent = "End: Failure";
+        endFailure.addEventListener("click", () => {
+          addEvent("endFailure");
+          setStage("survey", 0);
+        });
+        endButtons.appendChild(endSuccess);
+        endButtons.appendChild(endFailure);
+
+        container.appendChild(timerCard);
+        container.appendChild(buttonsGrid);
+        container.appendChild(endButtons);
+
+        startTimer();
+        return container;
+      }
+
+      function startTimer() {
+        if (timerInterval) {
+          clearInterval(timerInterval);
+        }
+        timerInterval = setInterval(() => {
+          const elapsed = document.getElementById("elapsed-time");
+          if (!elapsed || !appData.state.dataCollectionStartTime) {
+            return;
+          }
+          const diff = Date.now() - appData.state.dataCollectionStartTime;
+          const minutes = Math.floor(diff / 60000);
+          const seconds = Math.floor((diff % 60000) / 1000);
+          elapsed.textContent = `已用时：${minutes} 分 ${seconds} 秒`;
+        }, 1000);
+      }
+
+      function getSurveyQuestions() {
+        const intro = "以下的问题请从 1 到 5 打分， 1 分表示非常不同意，5 分表示非常同意。";
+        const susQuestions = [
+          { key: "q1", text: "我认为我会愿意经常使用本导航系统。" },
+          { key: "q2", text: "我发现这个导航系统过于复杂了。" },
+          { key: "q3", text: "我认为该导航系统容易使用。" },
+        ];
+        if (appData.condition !== "C") {
+          susQuestions.push({ key: "q4", text: "我认为我会需要技术人员的支持才能使用该导航系统。" });
+        }
+        susQuestions.push({ key: "q5", text: "我发现这个导航系统的不同功能整合地较好。" });
+        if (appData.condition !== "C") {
+          susQuestions.push({ key: "q6", text: "我认为这个导航系统太不一致了。" });
+        }
+        susQuestions.push(
+          { key: "q7", text: "我认为大部分人会很快学会使用这个导航系统。" },
+          { key: "q8", text: "我发现这个导航系统用起来很笨拙。" },
+          { key: "q9", text: "对于使用这个导航系统，我感到很自信。" },
+          { key: "q10", text: "在我可以使用这个导航系统前，我需要学习很多东西。" }
+        );
+
+        const openQuestions = [
+          { key: "q11", text: "本次导航任务中，最让你满意的是什么?" },
+          { key: "q12", text: "你遇到的主要问题或困难是什么?" },
+        ];
+        if (appData.condition !== "C") {
+          openQuestions.push({ key: "q13", text: "你认为这一导航系统如何改进才能解决这些问题?" });
+        }
+
+        return { intro, susQuestions, openQuestions };
+      }
+
+      function renderSurvey() {
+        const container = document.createElement("div");
+        container.className = "page";
+        renderHeader(container);
+
+        const { intro, susQuestions, openQuestions } = getSurveyQuestions();
+        const allQuestions = [
+          ...susQuestions.map((question) => ({ ...question, type: "sus" })),
+          ...openQuestions.map((question) => ({ ...question, type: "open" })),
+        ];
+        const index = appData.state.index;
+        const question = allQuestions[index];
+
+        const card = document.createElement("div");
+        card.className = "card";
+        const introText = document.createElement("div");
+        introText.className = "subtitle";
+        introText.textContent = intro;
+        const label = document.createElement("div");
+        label.className = "question";
+        label.textContent = question.text;
+        card.appendChild(introText);
+        card.appendChild(label);
+
+        if (question.type === "sus") {
+          const grid = document.createElement("div");
+          grid.className = "button-row";
+          for (let i = 1; i <= 5; i += 1) {
+            const button = document.createElement("button");
+            button.className = `btn ${appData.survey.sus[question.key] === i ? "pressed" : ""}`;
+            button.textContent = i;
+            button.addEventListener("click", () => {
+              appData.survey.sus[question.key] = i;
+              saveData();
+              render();
+            });
+            grid.appendChild(button);
+          }
+          card.appendChild(grid);
+        } else {
+          const textarea = document.createElement("textarea");
+          textarea.className = "textarea";
+          textarea.value = appData.survey[question.key] || "";
+          textarea.addEventListener("input", (event) => {
+            appData.survey[question.key] = event.target.value;
+            saveData();
+          });
+          card.appendChild(textarea);
+        }
+
+        const buttons = document.createElement("div");
+        buttons.className = "footer-buttons";
+        const prev = document.createElement("button");
+        prev.className = "btn secondary";
+        prev.textContent = "上一步";
+        prev.disabled = index === 0;
+        prev.addEventListener("click", () => {
+          if (index > 0) {
+            setStage("survey", index - 1);
+          }
+        });
+        const next = document.createElement("button");
+        next.className = "btn";
+        next.textContent = index === allQuestions.length - 1 ? "完成" : "下一步";
+        next.addEventListener("click", () => {
+          if (index === allQuestions.length - 1) {
+            setStage("finalMessage", 0);
+          } else {
+            setStage("survey", index + 1);
+          }
+        });
+        buttons.appendChild(prev);
+        buttons.appendChild(next);
+
+        container.appendChild(card);
+        container.appendChild(buttons);
+        return container;
+      }
+
+      function renderFinalMessage() {
+        const container = document.createElement("div");
+        container.className = "page";
+        renderHeader(container);
+
+        const message = document.createElement("div");
+        message.className = "message";
+        message.textContent = "非常感谢您参与本研究，这一条路径到此结束。";
+
+        const nextButton = document.createElement("button");
+        nextButton.className = "btn full";
+        nextButton.textContent = "进入数据导出";
+        nextButton.addEventListener("click", () => setStage("copy", 0));
+
+        container.appendChild(message);
+        container.appendChild(nextButton);
+        return container;
+      }
+
+      function renderCopyPage() {
+        const container = document.createElement("div");
+        container.className = "page";
+        renderHeader(container);
+
+        const card = document.createElement("div");
+        card.className = "card";
+        const title = document.createElement("div");
+        title.className = "question";
+        title.textContent = "导出本次路线数据";
+        const textarea = document.createElement("textarea");
+        textarea.className = "textarea copy-area";
+        textarea.readOnly = true;
+        textarea.value = JSON.stringify(appData, null, 2);
+        card.appendChild(title);
+        card.appendChild(textarea);
+
+        const copyButton = document.createElement("button");
+        copyButton.className = "btn full";
+        copyButton.textContent = "Copy to Clipboard";
+        copyButton.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(textarea.value);
+            copyButton.textContent = "已复制";
+          } catch (error) {
+            copyButton.textContent = "复制失败";
+          }
+        });
+
+        container.appendChild(card);
+        container.appendChild(copyButton);
+        return container;
+      }
+
+      function render() {
+        const app = document.getElementById("app");
+        app.innerHTML = "";
+        let page;
+        switch (appData.state.stage) {
+          case "home":
+            page = renderHome();
+            break;
+          case "participant":
+            page = renderParticipant();
+            break;
+          case "condition":
+            page = renderCondition();
+            break;
+          case "messages":
+            page = renderMessagePage();
+            break;
+          case "demographics":
+            page = renderDemographics();
+            break;
+          case "data":
+            page = renderDataCollection();
+            break;
+          case "survey":
+            page = renderSurvey();
+            break;
+          case "finalMessage":
+            page = renderFinalMessage();
+            break;
+          case "copy":
+            page = renderCopyPage();
+            break;
+          default:
+            page = renderHome();
+        }
+        app.appendChild(page);
+      }
+
+      render();
+    </script>
   </body>
 </html>
-
