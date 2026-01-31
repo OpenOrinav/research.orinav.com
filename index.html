@@ -2,7 +2,10 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
     <title>Orinav Research Data Collection</title>
     <style>
       :root {
@@ -91,12 +94,14 @@
         font-size: 28px;
         font-weight: 700;
         text-align: center;
+        margin: 0 0 12px;
       }
 
       .subtitle {
         font-size: 18px;
         text-align: center;
         color: var(--muted);
+        margin: 0 0 12px;
       }
 
       .message {
@@ -111,12 +116,14 @@
         background: var(--card);
         border-radius: 20px;
         box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        margin: 0;
       }
 
       .question {
         font-size: 24px;
         font-weight: 600;
         text-align: center;
+        margin: 0 0 12px;
       }
 
       .button-grid {
@@ -756,7 +763,7 @@
 
         if (appData.condition === "A") {
           if (appData.state.dataCollectionFlags.orinavObstaclesActive) {
-            addActionButton("End Obstacles", "orinavEndObstacles");
+            addActionButton("End Obstacles", "orinavEndObstacles", { fullLine: true });
           } else {
             addActionButton("Start Obstacles", "orinavStartObstacles", { fullLine: true });
           }
