@@ -26,7 +26,7 @@
         background: var(--bg);
         color: var(--text);
         min-height: 100vh;
-        overflow: hidden;
+        overflow-y: auto;
         padding-top: env(safe-area-inset-top);
         padding-bottom: env(safe-area-inset-bottom);
         padding-left: env(safe-area-inset-left);
@@ -721,12 +721,29 @@
           { label: "End Turning", type: "endTurn" },
         ];
 
-        const addActionButton = (label, type) => {
+        const addActionButton = (label, type, options = {}) => {
           const button = document.createElement("button");
           const count = appData.state.actionPressCounts[type] || 0;
-          button.className = `btn light ${count % 2 === 1 ? "pressed" : ""}`;
+          button.className = `btn light ${count % 2 === 1 ? "pressed" : ""} ${
+            options.fullLine ? "full" : ""
+          }`;
           button.textContent = label;
           button.addEventListener("click", () => {
+            if (type === "orinavStartObstacles") {
+              appData.state.dataCollectionFlags.orinavObstaclesActive = true;
+            }
+            if (type === "orinavEndObstacles") {
+              appData.state.dataCollectionFlags.orinavObstaclesActive = false;
+            }
+            if (type === "orinavStartTrafficLights") {
+              appData.state.dataCollectionFlags.orinavTrafficLightsActive = true;
+            }
+            if (
+              type === "orinavEndTrafficLightsSuccess" ||
+              type === "orinavEndTrafficLightsFailure"
+            ) {
+              appData.state.dataCollectionFlags.orinavTrafficLightsActive = false;
+            }
             appData.state.actionPressCounts[type] = (appData.state.actionPressCounts[type] || 0) + 1;
             addEvent(type);
             saveData();
@@ -741,13 +758,13 @@
           if (appData.state.dataCollectionFlags.orinavObstaclesActive) {
             addActionButton("End Obstacles", "orinavEndObstacles");
           } else {
-            addActionButton("Start Obstacles", "orinavStartObstacles");
+            addActionButton("Start Obstacles", "orinavStartObstacles", { fullLine: true });
           }
           if (appData.state.dataCollectionFlags.orinavTrafficLightsActive) {
             addActionButton("End Traffic Lights: Success", "orinavEndTrafficLightsSuccess");
             addActionButton("End Traffic Lights: Failure", "orinavEndTrafficLightsFailure");
           } else {
-            addActionButton("Start Traffic Lights", "orinavStartTrafficLights");
+            addActionButton("Start Traffic Lights", "orinavStartTrafficLights", { fullLine: true });
           }
           addActionButton("Shake", "orinavShake");
           addActionButton("Orientation", "orinavOrientation");
@@ -758,28 +775,7 @@
           addActionButton("Traffic Light Reading", "amapTrafficLight");
         }
 
-        buttonsGrid.addEventListener("click", (event) => {
-          const buttonText = event.target.textContent;
-          if (buttonText === "Start Obstacles") {
-            appData.state.dataCollectionFlags.orinavObstaclesActive = true;
-            saveData();
-          }
-          if (buttonText === "End Obstacles") {
-            appData.state.dataCollectionFlags.orinavObstaclesActive = false;
-            saveData();
-          }
-          if (buttonText === "Start Traffic Lights") {
-            appData.state.dataCollectionFlags.orinavTrafficLightsActive = true;
-            saveData();
-          }
-          if (
-            buttonText === "End Traffic Lights: Success" ||
-            buttonText === "End Traffic Lights: Failure"
-          ) {
-            appData.state.dataCollectionFlags.orinavTrafficLightsActive = false;
-            saveData();
-          }
-        });
+        // Button state toggles handled in addActionButton click handlers.
 
         const endButtons = document.createElement("div");
         endButtons.className = "footer-buttons";
