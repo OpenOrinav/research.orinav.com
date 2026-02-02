@@ -572,6 +572,16 @@
             ],
           },
           {
+            key: "level",
+            label: "视力残疾等级?",
+            options: [
+              { label: "一级盲 (极重度)", value: "blind-one" },
+              { label: "二级盲 (重度)", value: "blind-two" },
+              { label: "一级低视力 (中度)", value: "low-vision-one" },
+              { label: "二级低视力 (轻度)", value: "low-vision-two" }
+            ]
+          },
+          {
             key: "education",
             label: "教育程度?",
             options: [
@@ -788,6 +798,7 @@
           }
           addActionButton("Shake", "orinavShake");
           addActionButton("Orientation", "orinavOrientation");
+          addActionButton("Manual Switch", "orinavManualSwitch");
         }
         if (appData.condition === "B") {
           addActionButton("Orientation", "amapOrientation");
@@ -989,7 +1000,7 @@
 
         const copyButton = document.createElement("button");
         copyButton.className = "btn full";
-        copyButton.textContent = "Copy to Clipboard";
+        copyButton.textContent = "复制到剪切板";
         copyButton.addEventListener("click", async () => {
           try {
             await navigator.clipboard.writeText(textarea.value);
