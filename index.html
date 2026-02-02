@@ -785,6 +785,7 @@
           }
           addActionButton("Shake", "orinavShake");
           addActionButton("Orientation", "orinavOrientation");
+          addActionButton("Manual Switch", "orinavManualSwitch");
         }
         if (appData.condition === "B") {
           addActionButton("Orientation", "amapOrientation");
@@ -986,7 +987,7 @@
 
         const copyButton = document.createElement("button");
         copyButton.className = "btn full";
-        copyButton.textContent = "Copy to Clipboard";
+        copyButton.textContent = "复制到剪切板";
         copyButton.addEventListener("click", async () => {
           try {
             await navigator.clipboard.writeText(textarea.value);
