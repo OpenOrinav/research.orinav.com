@@ -270,6 +270,7 @@
           dataCollectionFlags: {
             orinavObstaclesActive: false,
             orinavTrafficLightsActive: false,
+            redLightActive: false,
           },
           dataCollectionStartTime: null,
         },
@@ -761,6 +762,12 @@
             ) {
               appData.state.dataCollectionFlags.orinavTrafficLightsActive = false;
             }
+            if (type === "startRedLight") {
+              appData.state.dataCollectionFlags.redLightActive = true;
+            }
+            if (type === "endRedLight") {
+              appData.state.dataCollectionFlags.redLightActive = false;
+            }
             appData.state.actionPressCounts[type] = (appData.state.actionPressCounts[type] || 0) + 1;
             addEvent(type);
             saveData();
@@ -770,6 +777,12 @@
         };
 
         baseButtons.forEach((item) => addActionButton(item.label, item.type));
+
+        if (appData.state.dataCollectionFlags.redLightActive) {
+          addActionButton("End Red Light", "endRedLight", { fullLine: true });
+        } else {
+          addActionButton("Start Red Light", "startRedLight", { fullLine: true });
+        }
 
         if (appData.condition === "A") {
           if (appData.state.dataCollectionFlags.orinavObstaclesActive) {
