@@ -359,9 +359,9 @@
         const info = document.createElement("div");
         info.className = "header-info";
         const participantText = document.createElement("strong");
-        participantText.textContent = `参与者：${appData.participant || "--"}`;
+        participantText.textContent = `参与者: ${appData.participant || "--"}`;
         const conditionText = document.createElement("span");
-        conditionText.textContent = `条件：${appData.condition || "--"}`;
+        conditionText.textContent = `条件: ${appData.condition || "--"}`;
         info.appendChild(participantText);
         info.appendChild(conditionText);
 
@@ -376,10 +376,10 @@
             return;
           }
           restart.dataset.confirm = "true";
-          restart.textContent = "Confirm?";
+          restart.textContent = "确认?";
           setTimeout(() => {
             restart.dataset.confirm = "false";
-            restart.textContent = "Restart";
+            restart.textContent = "重新开始";
           }, 2500);
         });
 
@@ -396,10 +396,10 @@
         card.className = "card";
         const title = document.createElement("div");
         title.className = "title";
-        title.textContent = "Orinav Research Data Collection";
+        title.textContent = "Project Orinav";
         const subtitle = document.createElement("div");
         subtitle.className = "subtitle";
-        subtitle.textContent = "请点击下方按钮开始数据采集";
+        subtitle.textContent = "ISEF 数据收集";
         card.appendChild(title);
         card.appendChild(subtitle);
 
@@ -424,7 +424,7 @@
         const grid = document.createElement("div");
         grid.className = "button-grid";
 
-        for (let i = 1; i <= 10; i += 1) {
+        for (let i = 1; i <= 21; i += 1) {
           const button = document.createElement("button");
           button.className = "btn";
           button.textContent = `P${i}`;
@@ -484,13 +484,9 @@
               ? "高德地图 + 盲杖"
               : "盲杖"
           } 完成这一条路径。`,
-          "这一条路线长约 500 米，大概需要您 5 分钟时间走完。",
+          "这一条路线长约 200 米，大概需要您 10 分钟时间走完。",
           "这一条路线中有一个路口，需要过红绿灯。",
-          "完成这条路线后，我们会休息几分钟，期间您会完成一个调查问卷。",
-          "下面我来为您介绍一下苹果手机的读屏软件。",
-          "左划能切换上一个标签，右划能切换下一个标签。",
-          "双击就能点击。",
-          "两根手指就能划动。",
+          "完成这条路线后，我们会休息几分钟，期间您会完成一个调查问卷。"
         ];
         const conditionMessages = [];
         if (appData.condition === "A") {
@@ -505,8 +501,7 @@
         if (appData.condition === "B") {
           conditionMessages.push(
             "下面我来为您介绍一下高德地图的功能。",
-            "导航过程中，高德地图会告诉您应该面向什么方向，才能对齐人行道。",
-            "在支持的地方，高德地图会告诉您红绿灯的读秒，不需要抬起手机。"
+            "导航过程中，高德地图会告诉您应该面向什么方向，才能对齐人行道。"
           );
         }
         const finalMessages = [
